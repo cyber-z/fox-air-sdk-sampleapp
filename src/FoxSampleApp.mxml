@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   applicationComplete="foxAnalyticsInit(event),foxInit(event)"
+			   applicationDPI="160">
+	<fx:Script> 
+		<![CDATA[
+			import flash.desktop.NativeApplication;
+			
+			import jp.appAdForce.AdLtvManager;
+			import jp.appAdForce.AnalyticsManager;
+			
+			private var ad:AdLtvManager = new AdLtvManager();
+			private var analytics:AnalyticsManager = new AnalyticsManager();
+			
+			private var openUrl:String = "http://www.google.co.jp";
+			private var buid:String = "buid_test";
+			private var cvId:int = 192;
+			private var sku:String = "xyz";
+			private var price:String = "1500";
+			private var out:String = "0";
+			
+			private function foxInit(event:Event):void {
+				trace("init");
+			} 
+			private function foxAnalyticsInit(event:Event):void {
+				
+				NativeApplication.nativeApplication.addEventListener(InvokeEvent.INVOKE, 
+					function sendStartSession(event:Event):void { 
+					// 起動計測
+					ad.sendConversionWithStartPage(openUrl);
+					analytics.sendStartSession();
+				});
+				
+				NativeApplication.nativeApplication.addEventListener(InvokeEvent.INVOKE,
+					function sendReengagementConversion(event:InvokeEvent):void {
+						analytics.sendStartSession();
+						if(event.arguments.length > 0) {
+							ad.sendReengagementConversion(event.arguments[0].toString());
+						}
+				});
+				
+				// アプリ離脱時のイベント処理
+				NativeApplication.nativeApplication.addEventListener(Event.DEACTIVATE, 
+					function sendEndSession(event:Event):void {
+						
+				});
+			} 
+
+			protected function button_sendConversionWithStartPage(event:MouseEvent):void { 
+				ad.sendConversionWithStartPage(openUrl);
+			} 
+			
+			protected function button_sendConversionWithBuid(event:MouseEvent):void { 
+				ad.sendConversionWithBuid(openUrl, buid); 
+			} 
+			
+			protected function button_sendLtv(event:MouseEvent):void { 
+				ad.sendLtv(cvId);
+			} 
+			
+			protected function button_addParameter(event:MouseEvent):void {
+				
+				ad.addParameter(AdLtvManager.PARAM_SKU, sku);
+				ad.addParameter(AdLtvManager.PARAM_PRICE, price);
+				ad.addParameter(AdLtvManager.PARAM_OUT, out);
+				ad.addParameter(AdLtvManager.PARAM_CURRENCY, "USD");
+				ad.sendLtv(cvId);
+			} 
+			
+			protected function button_sendStartSession(event:MouseEvent):void { 
+				analytics.sendStartSession();
+			} 
+			
+		]]> 
+	</fx:Script> 
+	
+	<s:layout> 
+		<s:VerticalLayout horizontalAlign="justify"/> 
+	</s:layout> 
+	<s:Label fontSize="30" fontWeight="bold" paddingTop="30" text="Force Operation X Air Sample"
+			 textAlign="center"/>
+	<s:Scroller x="130" y="10" width="150" height="500">
+		<s:VGroup>
+
+			<s:Button label="初回起動計測" click="button_sendConversionWithStartPage(event)"/>
+			<s:Button label="LTV" click="button_sendLtv(event)"/> 
+			<s:Button label="LTV ＋任意パラメータ" click="button_addParameter(event)"/> 
+			<s:Button label="セッション開始" click="button_sendStartSession(event)"/> 
+		</s:VGroup>
+	</s:Scroller>
+</s:Application>
